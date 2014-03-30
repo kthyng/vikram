@@ -24,13 +24,14 @@ def run():
     if not os.path.exists('figures'):
         os.makedirs('figures')
         
-    loc = 'http://barataria.tamu.edu:8080/thredds/dodsC/NcML/txla_nesting6.nc'
+    #loc = 'http://barataria.tamu.edu:8080/thredds/dodsC/NcML/txla_nesting6.nc'
+    loc = ['/','/']
     grid = tracpy.inout.readgrid(loc)
 
     # For when to start simulations running.
     # Let's only start one (they start every 24 hours)
-    overallstartdate = datetime(0001, 1, 1, 0, 1)
-    overallstopdate = datetime(0001, 2, 1, 0, 1)
+    overallstartdate = datetime(0001, 2, 1, 0, 1)
+    overallstopdate = datetime(0001, 3, 1, 0, 1)
 
     date = overallstartdate
 

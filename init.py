@@ -88,7 +88,7 @@ def init(date, loc, grid=None):
     N = 5
 
     # Number of days
-    ndays = 3
+    ndays = 0.5
 
     # This is a forward-moving simulation
     ff = 1 
