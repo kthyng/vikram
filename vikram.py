@@ -25,8 +25,9 @@ def run():
         os.makedirs('figures')
         
     #loc = 'http://barataria.tamu.edu:8080/thredds/dodsC/NcML/txla_nesting6.nc'
-    loc = ['/','/']
-    grid = tracpy.inout.readgrid(loc)
+    loc = ['']
+    nc = netCDF.Dataset('ocean_his_0001.nc') # need this for some grid information
+    grid = tracpy.inout.readgrid(loc, nc)
 
     # For when to start simulations running.
     # Let's only start one (they start every 24 hours)
