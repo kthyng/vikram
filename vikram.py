@@ -27,12 +27,12 @@ def run():
     #loc = 'http://barataria.tamu.edu:8080/thredds/dodsC/NcML/txla_nesting6.nc'
     loc = ''
     nc = netCDF.Dataset('ocean_his_0001.nc') # need this for some grid information
-    grid = tracpy.inout.readgrid(loc, nc)
+    grid = tracpy.inout.readgrid(loc, nc, llcrnrlon=-98, urcrnrlon=-80, llcrnrlat=18, urcrnrlat=31)
 
     # For when to start simulations running.
     # Let's only start one (they start every 24 hours)
-    overallstartdate = datetime(0001, 2, 1, 0, 1)
-    overallstopdate = datetime(0001, 3, 1, 0, 1)
+    overallstartdate = datetime(0001, 1, 1, 0, 0)
+    overallstopdate = datetime(0001, 1, 2, 0, 0)
 
     date = overallstartdate
 
@@ -55,7 +55,7 @@ def run():
             lonp, latp, zp, t, grid \
                 = tracpy.run.run(loc, nstep, ndays, ff, date, tseas, ah, av, \
                                     lon0, lat0, z0, zpar, do3d, doturb, name, N=N,  \
-                                    grid=grid, dostream=dostream, savell=False, units='seconds since 0001-01-01')
+                                    grid=grid, dostream=dostream, units='seconds since 0001-01-01')
 
         # # If basic figures don't exist, make them
         # if not os.path.exists('figures/' + name + '*.png'):
@@ -75,6 +75,14 @@ def run():
         # Increment by 24 hours for next loop, to move through more quickly
         # nh = nh + 24
         date = date + timedelta(hours=24)
+
+    # Plot
+    tracpy.plotting.background(grid=grid)
+    xp, yp = grid['basemap'](lonp, latp)
+    plt.plot(xp.T, yp.T, 'k')
+    plt.plot(xp[:,0], yp[:,0], 'go') # starting locations
+    plt.plot(xp[:,-1], yp[:,-1], 'ro') # stopping locations
+    plt.show()
 
     # # Do transport plot
     # tracpy.plotting.transport(name='all_f/N=5_dx=8/25days', fmod=startdate.isoformat()[0:7] + '*', 

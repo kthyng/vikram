@@ -88,7 +88,7 @@ def init(date, loc, grid=None):
     N = 5
 
     # Number of days
-    ndays = 0.5
+    ndays = 1.5
 
     # This is a forward-moving simulation
     ff = 1 
@@ -107,8 +107,8 @@ def init(date, loc, grid=None):
 
     # Initial lon/lat locations for drifters
     # I think there need to be at least 2 drifters
-    lon0 = np.array([24, 24])
-    lat0 = np.array([-88, -88.05])
+    lat0 = np.array([24, 24])
+    lon0 = np.array([-88, -88.05])
     # # Start uniform array of drifters across domain using x,y coords
     # dx = 1000 # initial separation distance of drifters, in meters, from sensitivity project
     # llcrnrlon = grid['lonr'].min(); urcrnrlon = grid['lonr'].max(); 
