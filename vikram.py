@@ -25,7 +25,7 @@ def run():
         os.makedirs('figures')
         
     #loc = 'http://barataria.tamu.edu:8080/thredds/dodsC/NcML/txla_nesting6.nc'
-    loc = ['']
+    loc = ''
     nc = netCDF.Dataset('ocean_his_0001.nc') # need this for some grid information
     grid = tracpy.inout.readgrid(loc, nc)
 
@@ -55,7 +55,7 @@ def run():
             lonp, latp, zp, t, grid \
                 = tracpy.run.run(loc, nstep, ndays, ff, date, tseas, ah, av, \
                                     lon0, lat0, z0, zpar, do3d, doturb, name, N=N,  \
-                                    grid=grid, dostream=dostream, savell=False)
+                                    grid=grid, dostream=dostream, savell=False, units='seconds since 0001-01-01')
 
         # # If basic figures don't exist, make them
         # if not os.path.exists('figures/' + name + '*.png'):
