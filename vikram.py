@@ -10,11 +10,56 @@ import netCDF4 as netCDF
 import pdb
 import matplotlib.pyplot as plt
 import tracpy
-import init
 from datetime import datetime, timedelta
 import glob
+from tracpy.tracpy_class import Tracpy
+import tracpy.plotting
 
-# npieces = 12 # number of pieces to divide starting locations for drifters into, in x direction
+def init():
+
+    currents_filename = 'bp9_his_000?.nc'
+    grid_filename = 'bp9_his_0001.nc'
+
+    time_units = 'seconds since 0001-01-01'
+
+    nsteps = 5 
+
+    # Number of steps to divide model output for outputting drifter location
+    N = 5
+
+    # Number of days
+    ndays = 1.5
+
+    # This is a forward-moving simulation
+    ff = 1 
+
+    # Time between outputs
+    tseas = 24*3600 # 4 hours between outputs, in seconds, time between model outputs 
+    ah = 0. # old tracks: 5.
+    av = 0. # m^2/s
+
+    # Initial lon/lat locations for drifters
+    # There need to be at least 2 drifters
+    lat0 = np.array([24, 24])
+    lon0 = np.array([-93, -93.05])
+
+    # surface drifters
+    z0 = 's'  
+    zpar = 49 
+
+    # for 3d flag, do3d=0 makes the run 2d and do3d=1 makes the run 3d
+    do3d = 0
+    doturb = 0
+
+    # Flag for streamlines. All the extra steps right after this are for streamlines.
+    dostream = 0
+
+    # Initialize Tracpy class
+    tp = Tracpy(currents_filename=currents_filename, grid_filename=grid_filename, tseas=tseas, ndays=ndays, nsteps=nsteps, dostream=dostream, savell=True, doperiodic=0, 
+                N=N, ff=ff, ah=ah, av=av, doturb=doturb, do3d=do3d, z0=z0, zpar=zpar, time_units=time_units, usebasemap=True)
+
+    return tp, lon0, lat0
+
 
 def run():
 
@@ -24,11 +69,6 @@ def run():
     if not os.path.exists('figures'):
         os.makedirs('figures')
         
-    #loc = 'http://barataria.tamu.edu:8080/thredds/dodsC/NcML/txla_nesting6.nc'
-    loc = ''
-    nc = netCDF.Dataset('ocean_his_0001.nc') # need this for some grid information
-    grid = tracpy.inout.readgrid(loc, nc, llcrnrlon=-98, urcrnrlon=-80, llcrnrlat=18, urcrnrlat=31)
-
     # For when to start simulations running.
     # Let's only start one (they start every 24 hours)
     overallstartdate = datetime(0001, 1, 1, 0, 0)
@@ -47,46 +87,22 @@ def run():
             not os.path.exists('tracks/' + name + 'gc.nc'):
 
             # Read in simulation initialization
-            nstep, N, ndays, ff, tseas, ah, av, lon0, lat0, z0, zpar, do3d, doturb, \
-                    grid, dostream = init.init(date, loc, grid=grid)
-            # pdb.set_trace()
+            tp, lon0, lat0 = init()
+
             # Run tracpy
-            # Save directly to grid coordinates
-            lonp, latp, zp, t, grid \
-                = tracpy.run.run(loc, nstep, ndays, ff, date, tseas, ah, av, \
-                                    lon0, lat0, z0, zpar, do3d, doturb, name, N=N,  \
-                                    grid=grid, dostream=dostream, units='seconds since 0001-01-01')
-
-        # # If basic figures don't exist, make them
-        # if not os.path.exists('figures/' + name + '*.png'):
-
-            # # Read in and plot tracks
-            # d = netCDF.Dataset('tracks/' + name + '.nc')
-            # lonp = d.variables['lonp'][:]
-            # latp = d.variables['latp'][:]
-            # # tracpy.plotting.tracks(lonp, latp, name, grid=grid)
-            # # tracpy.plotting.hist(lonp, latp, name, grid=grid, which='hexbin')
-            # d.close()
-            # # # Do transport plot
-            # tracpy.plotting.transport(name='all_f/N=5_dx=8/25days', fmod=date.isoformat()[0:13], 
-            #     extraname=date.isoformat()[0:13], 
-            #     Title='Transport on Shelf, for a week from ' + date.isoformat()[0:13], dmax=1.0)
+            lonp, latp, zp, t, T0, U, V = tracpy.run.run(tp, date, lon0, lat0)
 
         # Increment by 24 hours for next loop, to move through more quickly
         # nh = nh + 24
         date = date + timedelta(hours=24)
 
     # Plot
-    tracpy.plotting.background(grid=grid)
-    xp, yp = grid['basemap'](lonp, latp)
+    tracpy.plotting.background(grid=tp.grid)
+    xp, yp = tp.grid['basemap'](lonp, latp)
     plt.plot(xp.T, yp.T, 'k')
     plt.plot(xp[:,0], yp[:,0], 'go') # starting locations
     plt.plot(xp[:,-1], yp[:,-1], 'ro') # stopping locations
     plt.show()
-
-    # # Do transport plot
-    # tracpy.plotting.transport(name='all_f/N=5_dx=8/25days', fmod=startdate.isoformat()[0:7] + '*', 
-    #     extraname=startdate.isoformat()[0:7], Title='Transport on Shelf', dmax=1.0)
 
 
 if __name__ == "__main__":
